@@ -854,10 +854,20 @@
         dotsEl.appendChild(d);
     }
 
-    function go(i) {
+    // Hash router logic
+    window.addEventListener('hashchange', () => {
+        const h = parseInt(location.hash.replace('#slide-', ''));
+        if (!isNaN(h) && h !== cur) go(h, true);
+    });
+
+    function go(i, fromHash = false) {
         if (i < 0 || i >= total) return;
         cur = i;
         deck.style.transform = `translateX(-${cur * 100}vw)`;
+
+        if (!fromHash) {
+            history.replaceState(null, null, '#slide-' + cur);
+        }
 
         // Dots
         dotsEl.querySelectorAll('.d').forEach((d, idx) => d.classList.toggle('on', idx === cur));
@@ -873,41 +883,37 @@
         // Adapt UI to slide background
         const isDark = slides[cur].dataset.bg === 'dark';
         document.body.classList.toggle('light-slide', !isDark);
-
-        // Proto preloader
-        const pi = slides[cur].dataset.proto;
-        if (pi && !slides[cur].dataset.loaded) {
-            slides[cur].dataset.loaded = '1';
-            setTimeout(() => {
-                document.getElementById('pre' + pi).classList.add('off');
-                document.getElementById('p' + pi).classList.add('on');
-                lucide.createIcons();
-            }, 2500);
-        }
     }
 
     // Arrows
     document.getElementById('al').onclick = () => go(cur - 1);
     document.getElementById('ar').onclick = () => go(cur + 1);
 
-    // Touch
-    deck.addEventListener('touchstart', e => { 
-        if (e.target.closest('.proto')) return; // DON'T track swipes inside prototypes
-        sx = e.touches[0].clientX; drag = true; deck.style.transition = 'none'; 
-    }, { passive: true });
-    
-    deck.addEventListener('touchmove', e => { 
-        if (!drag) return; 
-        cx = e.touches[0].clientX; deck.style.transform = `translateX(${-(cur * innerWidth) + (cx - sx)}px)`; 
-    }, { passive: true });
-    
-    deck.addEventListener('touchend', () => { 
-        if (!drag) return; // Prevent ending a drag that didn't start
-        drag = false; deck.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'; 
-        const d = cx - sx; 
-        if (Math.abs(d) > 50) { d < 0 ? go(cur + 1) : go(cur - 1); } else { go(cur); } 
-        sx = 0; cx = 0; 
-    });
+    // Touch & Mouse Swipe
+    function startDrag(clientX) {
+        sx = clientX; drag = true; deck.style.transition = 'none';
+    }
+    function moveDrag(clientX) {
+        if (!drag) return;
+        cx = clientX; deck.style.transform = `translateX(${-(cur * innerWidth) + (cx - sx)}px)`;
+    }
+    function endDrag() {
+        if (!drag) return;
+        drag = false; deck.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
+        const d = cx - sx;
+        if (Math.abs(d) > 50) { d < 0 ? go(cur + 1) : go(cur - 1); } else { go(cur); }
+        sx = 0; cx = 0;
+    }
+
+    // Touch events
+    deck.addEventListener('touchstart', e => startDrag(e.touches[0].clientX), { passive: true });
+    deck.addEventListener('touchmove', e => moveDrag(e.touches[0].clientX), { passive: true });
+    deck.addEventListener('touchend', endDrag);
+
+    // Mouse events (for desktop swiping)
+    deck.addEventListener('mousedown', e => startDrag(e.clientX));
+    window.addEventListener('mousemove', e => moveDrag(e.clientX));
+    window.addEventListener('mouseup', endDrag);
 
     // Keyboard
     document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(cur + 1); if (e.key === 'ArrowLeft') go(cur - 1); });
@@ -933,7 +939,8 @@
     });
 
     // Init
-    go(0);
+    const initialSlide = parseInt(location.hash.replace('#slide-', ''));
+    go(!isNaN(initialSlide) ? initialSlide : 0);
 </script>
 </body>
 </html>

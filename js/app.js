@@ -139,6 +139,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* =========================================
+       PROTOTYPE TOAST FEEDBACK
+       ========================================= */
+    function showAppToast(msgEN, msgJP) {
+        let toast = document.getElementById('app-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'app-toast';
+            toast.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:rgba(0,0,0,0.8); color:white; padding:12px 24px; border-radius:30px; font-size:0.85rem; font-weight:600; z-index:9999; opacity:0; pointer-events:none; transition:all 0.3s; white-space:nowrap;';
+            document.body.appendChild(toast);
+        }
+        
+        const isJp = document.body.classList.contains('lang-jp');
+        toast.innerHTML = isJp ? msgJP : msgEN;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+        }, 2000);
+    }
+
+    // Attach to Bottom Nav (excluding Admin which links out)
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        if (tab.getAttribute('href') === '#') {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                showAppToast('Coming in full version', '本番環境で実装されます');
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        }
+    });
+
+    // Chat input
+    const chatBtn = document.querySelector('.chat-input-area button');
+    if (chatBtn) {
+        chatBtn.addEventListener('click', () => {
+            showAppToast('Auto-translation works here', 'ここに自動翻訳チャットが入ります');
+        });
+    }
+
+
+    /* =========================================
        CSS ANIMATION INJECTIONS
        ========================================= */
     const style = document.createElement('style');
