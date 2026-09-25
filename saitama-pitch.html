@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Crew - 次世代人材管理システム (Next-Gen HR System)</title>
+    
+    <!-- Large, clear Japanese Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Icon Library -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Chart.js for Visuals -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #1E3A8A;     /* Deep Corporate Blue */
+            --accent: #2563EB;      /* Bright Blue */
+            --bg-color: #F8FAFC;    /* Very Light Gray */
+            --text-dark: #0F172A;   /* Almost Black */
+            --text-muted: #475569;  /* Gray */
+            --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-size: 18px; /* Large base font for 50+ demographic */
+        }
+
+        /* Presentation Container */
+        .presentation-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--white);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.05);
+        }
+
+        /* Section Layout */
+        .section {
+            padding: 80px 60px;
+            border-bottom: 2px solid #E2E8F0;
+        }
+        
+        .section-alt {
+            background-color: #F1F5F9;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+        
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        p.subtitle {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: var(--white);
+            padding: 100px 60px;
+        }
+        .hero h1 {
+            color: var(--white);
+        }
+        .hero p.subtitle {
+            color: #DBEAFE;
+        }
+
+        /* Grid Layouts for Icons & Features */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .icon-box {
+            background: var(--white);
+            padding: 40px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            border: 1px solid #E2E8F0;
+        }
+        .icon-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .big-icon {
+            width: 80px;
+            height: 80px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .chart-wrapper {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Callout Box */
+        .callout {
+            background: #EFF6FF;
+            border-left: 8px solid var(--accent);
+            padding: 30px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 40px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+
+    <!-- HERO SECTION -->
+    <div class="hero">
+        <h1>次世代の外国人材管理システム</h1>
+        <p class="subtitle">（Next-Generation Foreign Staff Management System）</p>
+        <div style="font-size: 1.6rem; font-weight: 700; margin-top: 40px; background: rgba(255,255,255,0.2); display: inline-block; padding: 15px 40px; border-radius: 50px;">
+            人材派遣の「ムダ」と「不正」を完全にゼロへ
+        </div>
+    </div>
+
+    <!-- SECTION 1: BAR CHART (Time Saved) -->
+    <div class="section">
+        <h2>圧倒的な業務効率化（コスト削減）</h2>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+        <div class="callout">
+            <i data-feather="trending-down" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;"></i>
+            毎月のタイムシート集計・給与計算にかかる時間を「95%削減」します。
+        </div>
+    </div>
+
+    <!-- SECTION 2: ICONS (Anti-Fraud) -->
+    <div class="section section-alt">
+        <h2>不正打刻の「完全防止」システム</h2>
+        <p style="text-align: center; font-size: 1.3rem; margin-bottom: 20px;">
+            従来のタイムカードや紙の出勤簿では、友人に打刻を頼む「不正」を防げませんでした。<br>
+            私たちのアプリは、最先端の技術でこれを不可能にします。
+        </p>
+        
+        <div class="grid-3">
+            <div class="icon-box">
+                <i data-feather="map-pin" class="big-icon"></i>
+                <h3>GPS位置情報</h3>
+                <p>工場から半径100m以内でしか出勤ボタンが押せません。</p>
+            </div>
+            <div class="icon-box">
+                <i data-feather="camera" class="big-icon"></i>
+                <h3>顔認証システム</h3>
+                <p>出勤時に本人の顔写真を撮影し、なりすましを防ぎます。</p>
+            </div>
+            <div class="icon-box">
+                <i data-feather="clock" class="big-icon"></i>
+                <h3>リアルタイム管理</h3>
+                <p>遅刻や欠勤を、管理者のスマホへ即座に通知します。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: PIE CHART (Compliance) -->
+    <div class="section">
+        <h2>確実なコンプライアンス（在留資格管理）</h2>
+        <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 60px; text-align: left; align-items: center;">
+            <div class="chart-wrapper">
+                <canvas id="complianceChart"></canvas>
+            </div>
+            <div>
+                <h3 style="font-size: 2rem; color: var(--primary);">不法就労リスクをゼロに。</h3>
+                <ul style="list-style: none; margin-top: 20px;">
+                    <li style="margin-bottom: 20px; font-size: 1.2rem;">
+                        <i data-feather="alert-circle" style="color: var(--warning); margin-right: 10px; vertical-align: bottom;"></i> 
+                        <strong>留学生の28時間制限:</strong><br>上限に近づくとシステムが自動警告を出します。
+                    </li>
+                    <li style="font-size: 1.2rem;">
+                        <i data-feather="calendar" style="color: var(--success); margin-right: 10px; vertical-align: bottom;"></i> 
+                        <strong>在留カード期限:</strong><br>更新時期を90日前に自動でお知らせします。
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: CLIENT PORTAL (Trust) -->
+    <div class="section section-alt" style="text-align: center;">
+        <h2>派遣先企業からの「絶対的な信頼」を獲得</h2>
+        <i data-feather="shield" style="width: 120px; height: 120px; color: var(--primary); margin: 30px 0;"></i>
+        <p style="font-size: 1.4rem; max-width: 800px; margin: 0 auto;">
+            派遣先の工場長に、専用の「閲覧用URL」を送信するだけです。<br>
+            工場長はパスワード不要で、自社の稼働状況やデジタル勤務表（出勤簿）をスマホで瞬時に確認できます。<br><br>
+            <strong>「この派遣会社はシステムがしっかりしている」</strong>という圧倒的な信用（信用・Shinyo）に繋がります。
+        </p>
+        <button onclick="window.location.href='index.html'" style="margin-top: 50px; background: var(--accent); color: white; padding: 20px 60px; font-size: 1.5rem; font-weight: 700; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);">
+            デモ画面を見る (View Demo)
+        </button>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Staff Crew Technology Solutions.
+    </div>
+
+</div>
+
+<!-- Initialize Icons -->
+<script>
+    feather.replace();
+</script>
+
+<!-- Initialize Charts -->
+<script>
+    // Global Chart Settings
+    Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
+    Chart.defaults.font.size = 16;
+    Chart.defaults.color = '#475569';
+
+    // 1. Time Saved Bar Chart
+    const ctxTime = document.getElementById('timeChart').getContext('2d');
+    new Chart(ctxTime, {
+        type: 'bar',
+        data: {
+            labels: ['従来の紙・エクセル管理', 'Staff Crew システム導入後'],
+            datasets: [{
+                label: '毎月の管理業務時間（時間）',
+                data: [120, 5], // 120 hours vs 5 hours
+                backgroundColor: [
+                    '#94A3B8', // Gray for old method
+                    '#2563EB'  // Blue for new method
+                ],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: '毎月の管理業務にかかる時間（比較）',
+                    font: { size: 20, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '作業時間 (Hours)' }
+                }
+            }
+        }
+    });
+
+    // 2. Compliance Pie Chart
+    const ctxComp = document.getElementById('complianceChart').getContext('2d');
+    new Chart(ctxComp, {
+        type: 'doughnut',
+        data: {
+            labels: ['適正稼働（安全）', '28時間上限接近（警告）', 'ビザ期限接近（注意）'],
+            datasets: [{
+                data: [85, 10, 5],
+                backgroundColor: [
+                    '#10B981', // Safe (Green)
+                    '#F59E0B', // Warning (Orange)
+                    '#EF4444'  // Danger (Red)
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 20, font: { size: 14 } }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+</script>
+
+</body>
+</html>

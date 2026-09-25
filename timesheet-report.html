@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Crew - Kinmuhyou (Timesheet)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        /* Print & Document Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        body {
+            background-color: #F4F7F9;
+            color: #1E293B;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        /* A4 Paper Simulation */
+        .a4-document {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 4px;
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Print Mode: Remove shadow and margin */
+        @media print {
+            body { background: none; padding: 0; }
+            .a4-document { box-shadow: none; border: none; padding: 0; width: 100%; min-height: auto; }
+            .no-print { display: none !important; }
+        }
+
+        /* Top Actions (Buttons) */
+        .doc-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .btn-print {
+            background-color: #2563EB;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #EFF6FF;
+            color: #2563EB;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid #BFDBFE;
+        }
+
+        /* Document Header */
+        .doc-header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .doc-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            border-bottom: 2px solid #1E293B;
+            display: inline-block;
+            padding-bottom: 4px;
+            margin-bottom: 20px;
+        }
+
+        /* Info & Hanko Grid */
+        .top-info-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .info-table {
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .info-table th {
+            background-color: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            padding: 6px 12px;
+            font-weight: 500;
+            text-align: center;
+            width: 100px;
+        }
+
+        .info-table td {
+            border: 1px solid #CBD5E1;
+            padding: 6px 12px;
+            min-width: 150px;
+        }
+
+        /* Hanko (Stamp) Box */
+        .hanko-box {
+            display: flex;
+            border: 1px solid #CBD5E1;
+            font-size: 12px;
+        }
+
+        .hanko-cell {
+            width: 60px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #CBD5E1;
+        }
+        
+        .hanko-cell:last-child {
+            border-right: none;
+        }
+
+        .hanko-title {
+            text-align: center;
+            border-bottom: 1px solid #CBD5E1;
+            background-color: #F8FAFC;
+            padding: 4px 0;
+        }
+
+        .hanko-space {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .digital-stamp {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #EF4444;
+            color: #EF4444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            opacity: 0.8;
+            transform: rotate(-10deg);
+        }
+
+        /* Main Data Table */
+        .timesheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .timesheet-table th {
+            background-color: #F8FAFC;
+            border: 1px solid #94A3B8;
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .timesheet-table td {
+            border: 1px solid #94A3B8;
+            padding: 6px 4px;
+            text-align: center;
+            height: 28px;
+        }
+
+        .ts-weekend {
+            background-color: #FEF2F2; /* Light red for Sunday/Holiday */
+        }
+        
+        .ts-saturday {
+            background-color: #EFF6FF; /* Light blue for Saturday */
+        }
+
+        /* Footer Summaries */
+        .summary-box {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .summary-table {
+            border-collapse: collapse;
+            font-size: 13px;
+            border: 2px solid #1E293B;
+        }
+
+        .summary-table th {
+            background-color: #F8FAFC;
+            border: 1px solid #1E293B;
+            padding: 8px 16px;
+        }
+
+        .summary-table td {
+            border: 1px solid #1E293B;
+            padding: 8px 16px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* Footer Watermark */
+        .footer-note {
+            text-align: center;
+            font-size: 10px;
+            color: #94A3B8;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 10px;
+        }
+        .back-to-pitch {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1E293B;
+            color: white !important;
+            padding: 12px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 9999;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+        }
+        .back-to-pitch i { width: 18px; height: 18px; }
+        .back-to-pitch:hover { transform: translateY(-3px); background: #0F172A; box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+        @media (max-width: 768px) {
+            .back-to-pitch { bottom: 16px; right: 16px; font-size: 0.85rem; padding: 10px 16px; }
+            .back-to-pitch i { width: 16px; height: 16px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Back to Pitch Button -->
+    <a href="index.html" class="back-to-pitch no-print">
+        <i data-feather="arrow-left"></i>
+        <span>プレゼンに戻る / Back to Pitch</span>
+    </a>    <div class="a4-document">
+        
+        <!-- Actions (Hidden in Print) -->
+        <div class="doc-actions no-print">
+            <div class="system-badge"><i data-feather="lock" style="width: 14px;"></i> Staff Crew Secure Portal</div>
+            <button class="btn-print" onclick="window.print()"><i data-feather="printer"></i> Print / Save as PDF</button>
+        </div>
+
+        <!-- Header -->
+        <div class="doc-header">
+            <div class="doc-title">勤 務 表 (Timesheet)</div>
+            <p style="font-size: 14px; font-weight: 700;">2026年 8月度 (August 2026)</p>
+        </div>
+
+        <!-- Info & Hanko Row -->
+        <div class="top-info-grid">
+            <table class="info-table">
+                <tr>
+                    <th>派遣先<br>(Factory/Site)</th>
+                    <td>東京オートアセンブリ<br>(Tokyo Auto Assembly)</td>
+                </tr>
+                <tr>
+                    <th>氏名<br>(Name)</th>
+                    <td><strong>Rajesh Thapa (ラジェッシュ)</strong></td>
+                </tr>
+                <tr>
+                    <th>社員番号<br>(ID)</th>
+                    <td>SC-8472</td>
+                </tr>
+            </table>
+
+            <div class="hanko-box">
+                <div class="hanko-cell">
+                    <div class="hanko-title">工場長<br>(Manager)</div>
+                    <div class="hanko-space">
+                        <div class="digital-stamp">
+                            <span>承認</span>
+                            <span style="font-size:8px;">(田中)</span>
+                            <span>8/31</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hanko-cell">
+                    <div class="hanko-title">派遣元<br>(Agency)</div>
+                    <div class="hanko-space">
+                        <div class="digital-stamp">
+                            <span>確認</span>
+                            <span style="font-size:8px;">SC</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timesheet Grid -->
+        <table class="timesheet-table">
+            <thead>
+                <tr>
+                    <th width="5%">日付<br>(Date)</th>
+                    <th width="5%">曜日<br>(Day)</th>
+                    <th width="12%">出勤<br>(Start)</th>
+                    <th width="12%">退勤<br>(End)</th>
+                    <th width="10%">休憩<br>(Break)</th>
+                    <th width="12%">実働時間<br>(Regular)</th>
+                    <th width="12%">残業時間<br>(Overtime)</th>
+                    <th width="32%">備考<br>(Remarks / Verification)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Row 1 -->
+                <tr>
+                    <td>1</td>
+                    <td>土 (Sat)</td>
+                    <td>07:55</td>
+                    <td>17:05</td>
+                    <td>1:00</td>
+                    <td>8:00</td>
+                    <td>0:10</td>
+                    <td style="text-align: left; padding-left: 10px; color: #10B981; font-size: 10px;">✔ GPS Verified</td>
+                </tr>
+                <!-- Row 2 -->
+                <tr class="ts-weekend">
+                    <td>2</td>
+                    <td>日 (Sun)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td style="text-align: left; padding-left: 10px;">休日 (Holiday)</td>
+                </tr>
+                <!-- Row 3 -->
+                <tr>
+                    <td>3</td>
+                    <td>月 (Mon)</td>
+                    <td>07:58</td>
+                    <td>19:00</td>
+                    <td>1:00</td>
+                    <td>8:00</td>
+                    <td>2:00</td>
+                    <td style="text-align: left; padding-left: 10px; color: #10B981; font-size: 10px;">✔ GPS Verified</td>
+                </tr>
+                <!-- Row 4 -->
+                <tr>
+                    <td>4</td>
+                    <td>火 (Tue)</td>
+                    <td>07:50</td>
+                    <td>17:00</td>
+                    <td>1:00</td>
+                    <td>8:00</td>
+                    <td>0:00</td>
+                    <td style="text-align: left; padding-left: 10px; color: #10B981; font-size: 10px;">✔ GPS Verified</td>
+                </tr>
+                <!-- Missing Day Simulation -->
+                <tr>
+                    <td>5</td>
+                    <td>水 (Wed)</td>
+                    <td>--:--</td>
+                    <td>--:--</td>
+                    <td>--:--</td>
+                    <td>0:00</td>
+                    <td>0:00</td>
+                    <td style="text-align: left; padding-left: 10px; color: #EF4444; font-size: 10px;">欠勤 (Absent) - Medical Leave</td>
+                </tr>
+                <!-- Fake rows to fill space to simulate full month -->
+                <tr><td>6</td><td>木 (Thu)</td><td>07:52</td><td>17:15</td><td>1:00</td><td>8:00</td><td>0:15</td><td style="text-align: left; padding-left: 10px; color: #10B981; font-size: 10px;">✔ GPS Verified</td></tr>
+                <tr><td>7</td><td>金 (Fri)</td><td>07:55</td><td>18:30</td><td>1:00</td><td>8:00</td><td>1:30</td><td style="text-align: left; padding-left: 10px; color: #10B981; font-size: 10px;">✔ GPS Verified</td></tr>
+                <tr class="ts-saturday"><td>8</td><td>土 (Sat)</td><td></td><td></td><td></td><td></td><td></td><td>休日 (Holiday)</td></tr>
+                <tr class="ts-weekend"><td>9</td><td>日 (Sun)</td><td></td><td></td><td></td><td></td><td></td><td>休日 (Holiday)</td></tr>
+                <tr><td>10</td><td>月 (Mon)</td><td>08:02</td><td>17:00</td><td>1:00</td><td>7:58</td><td>0:00</td><td style="text-align: left; padding-left: 10px; color: #F59E0B; font-size: 10px;">遅刻 (Late 2m)</td></tr>
+            </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="summary-box">
+            <table class="summary-table">
+                <tr>
+                    <th>総労働時間<br>(Total Hours)</th>
+                    <td>164:00</td>
+                </tr>
+                <tr>
+                    <th>総残業時間<br>(Total Overtime)</th>
+                    <td>14:30</td>
+                </tr>
+                <tr>
+                    <th>出勤日数<br>(Days Worked)</th>
+                    <td>21 日</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer-note">
+            This document is automatically generated and cryptographically verified by the Staff Crew System. 
+            No manual signature required. Document ID: SC-202608-8472-A
+        </div>
+
+    </div>
+
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Staff Crew - Worker App Prototype</title>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="mobile-body lang-jp">
+    
+    <!-- Back to Pitch Button -->
+    <a href="index.html" class="back-to-pitch">
+        <i data-feather="arrow-left"></i>
+        <span class="jp-text">プレゼンに戻る</span>
+        <span class="en-text">Back to Pitch</span>
+    </a>
+
+    <div class="phone-frame fade-in-up">
+        <div class="notch"></div>
+        
+        <div class="app-screen">
+            <header class="app-header">
+                <div class="app-greeting">
+                    <h2>
+                        <span class="en-text">Hello, Rajesh</span>
+                        <span class="jp-text">ラジェッシュさん</span>
+                    </h2>
+                    <p>ID: SC-8472 | SSW Visa</p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="lang-btn" id="langToggleBtn"><i data-feather="globe"></i> 日本語</button>
+                    <button class="icon-btn" id="btnChat">
+                        <i data-feather="message-circle"></i>
+                        <span class="badge-dot"></span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="app-content">
+                
+                <!-- Today's Assignment Card -->
+                <div class="m-card fade-in-up delay-1">
+                    <div class="m-card-header">
+                        <span class="m-card-title">
+                            <span class="en-text">Today's Dispatch</span>
+                            <span class="jp-text">本日の派遣先</span>
+                        </span>
+                        <span class="m-date-tag">Oct 24</span>
+                    </div>
+                    <div class="job-details">
+                        <div class="job-icon"><i data-feather="map-pin"></i></div>
+                        <div class="job-text">
+                            <h4>
+                                <span class="en-text">Tokyo Auto Assembly</span>
+                                <span class="jp-text">東京オートアセンブリ</span>
+                            </h4>
+                            <p>
+                                <span class="en-text">Sector 4, Line B (08:00 - 17:00)</span>
+                                <span class="jp-text">第4セクター Bライン (08:00 - 17:00)</span>
+                            </p>
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-ripple" id="btnCheckIn">
+                        <i data-feather="camera"></i> 
+                        <span class="en-text">GPS & Selfie Check-In</span>
+                        <span class="jp-text">GPS・顔認証で出勤</span>
+                    </button>
+                </div>
+
+                <!-- Language Training Module -->
+                <h3 style="font-size: 1rem; margin: 24px 0 12px; color: var(--text-primary);" class="fade-in-up delay-2">
+                    <span class="en-text">Job Vocabulary (Flashcards)</span>
+                    <span class="jp-text">業務単語（フラッシュカード）</span>
+                </h3>
+                <div class="flashcard-box fade-in-up delay-2" id="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="fc-front">
+                            <span class="fc-category">Machinery (N4)</span>
+                            <div class="fc-jp">安全第一</div>
+                            <div class="fc-romaji">(Anzen Daiichi)</div>
+                            <div class="fc-hint"><i data-feather="corner-down-right"></i> Tap to flip</div>
+                        </div>
+                        <div class="fc-back">
+                            <span class="fc-category">English Meaning</span>
+                            <div class="fc-en">Safety First</div>
+                            <div class="fc-romaji" style="margin-top: 8px;">सुरक्षा पहिलो</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;" class="fade-in-up delay-3">
+                    <div class="m-card btn-ripple" id="btnAdvance" style="margin-bottom: 0; text-align: center; padding: 16px; cursor: pointer;">
+                        <i data-feather="dollar-sign" style="color: var(--primary-color); margin-bottom: 8px;"></i>
+                        <h4 style="font-size: 0.85rem;">
+                            <span class="en-text">Salary Advance</span>
+                            <span class="jp-text">給与前払い</span>
+                        </h4>
+                    </div>
+                    <div class="m-card btn-ripple" id="btnLeave" style="margin-bottom: 0; text-align: center; padding: 16px; cursor: pointer;">
+                        <i data-feather="file-text" style="color: var(--primary-color); margin-bottom: 8px;"></i>
+                        <h4 style="font-size: 0.85rem;">
+                            <span class="en-text">Emergency Leave</span>
+                            <span class="jp-text">緊急休暇申請</span>
+                        </h4>
+                    </div>
+                </div>
+
+                <!-- SOS Emergency Button -->
+                <button class="btn-primary btn-ripple btn-danger fade-in-up delay-3" id="btnSOS" style="margin-top: 24px;">
+                    <i data-feather="alert-triangle"></i> 
+                    <span class="en-text">Emergency SOS</span>
+                    <span class="jp-text">緊急SOSボタン</span>
+                </button>
+
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <a href="#" class="nav-tab active">
+                    <i data-feather="home"></i>
+                    <span class="en-text">Home</span><span class="jp-text">ホーム</span>
+                </a>
+                <a href="#" class="nav-tab">
+                    <i data-feather="book-open"></i>
+                    <span class="en-text">Learn</span><span class="jp-text">学習</span>
+                </a>
+                <a href="#" class="nav-tab">
+                    <i data-feather="credit-card"></i>
+                    <span class="en-text">Wallet</span><span class="jp-text">財布</span>
+                </a>
+                <a href="index.html" class="nav-tab">
+                    <i data-feather="monitor"></i>
+                    <span class="en-text">Admin</span><span class="jp-text">管理</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- MODALS -->
+
+        <!-- Chat / Translation Modal -->
+        <div class="modal-overlay" id="modalChat">
+            <div class="slide-panel">
+                <div class="panel-drag-handle"></div>
+                <h3 style="margin-bottom: 16px; text-align: center; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i data-feather="message-circle" style="color:var(--primary-color);"></i> 
+                    <span class="en-text">HR Manager (Tanaka)</span><span class="jp-text">人事マネージャー（田中）</span>
+                </h3>
+                
+                <div class="chat-container">
+                    <div class="chat-msg received">
+                        <span class="en-text">भोली काममा आउँदा सेफ्टी जुत्ता अनिवार्य लगाएर आउनुहोला।</span>
+                        <span class="jp-text">明日は必ず安全靴を履いて出勤してください。</span>
+                        <div class="chat-translation-tag">
+                            <i data-feather="check" style="width:12px;"></i> Auto-Translated
+                        </div>
+                    </div>
+                    
+                    <div class="chat-msg sent">
+                        <span class="en-text">हवस, म ल्याउँछु।</span>
+                        <span class="jp-text">はい、持参します。</span>
+                        <div class="chat-translation-tag">
+                            <i data-feather="zap" style="width:12px;"></i> Translating...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" placeholder="Type message...">
+                    <button><i data-feather="send" style="width:18px;"></i></button>
+                </div>
+                <button class="btn-outline btn-ripple close-modal" style="width: 100%; margin-top: 20px; border: none;">
+                    <span class="en-text">Close Chat</span><span class="jp-text">閉じる</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Check-in Modal -->
+        <div class="modal-overlay" id="modalCheckIn">
+            <div class="slide-panel">
+                <div class="panel-drag-handle"></div>
+                <h3 style="margin-bottom: 16px; text-align: center;">
+                    <span class="en-text">Identity Verification</span>
+                    <span class="jp-text">本人確認</span>
+                </h3>
+                <div class="camera-view">
+                    <i data-feather="user" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                    <p style="margin-top: 12px; font-size: 0.8rem;">
+                        <span class="en-text">Position your face in the frame</span>
+                        <span class="jp-text">枠内に顔を合わせてください</span>
+                    </p>
+                    <div class="camera-frame"></div>
+                </div>
+                <div style="text-align:center; color:var(--success); margin-bottom:20px; font-size:0.9rem; font-weight:500;">
+                    <i data-feather="check-circle" style="width:16px;"></i> 
+                    <span class="en-text">GPS Location Verified</span>
+                    <span class="jp-text">GPS位置情報 認証済</span>
+                </div>
+                <button class="btn-primary btn-ripple" id="confirmCheckIn" style="background: var(--success);">
+                    <span class="en-text">Verify & Check In</span>
+                    <span class="jp-text">顔認証して出勤する</span>
+                </button>
+                <button class="btn-outline btn-ripple close-modal" style="width: 100%; margin-top: 12px; border: none;">
+                    <span class="en-text">Cancel</span>
+                    <span class="jp-text">キャンセル</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Salary Advance Modal -->
+        <div class="modal-overlay" id="modalAdvance">
+            <div class="slide-panel">
+                <div class="panel-drag-handle"></div>
+                <h3 style="margin-bottom: 20px; text-align: center;">
+                    <span class="en-text">Digital Salary Advance</span>
+                    <span class="jp-text">給与前払い申請</span>
+                </h3>
+                <div style="background:var(--bg-main); padding:20px; border-radius:12px; text-align:center; margin-bottom:20px;">
+                    <p style="font-size:0.85rem; color:var(--text-secondary);">
+                        <span class="en-text">Earned Wages Available</span>
+                        <span class="jp-text">利用可能額（労働済）</span>
+                    </p>
+                    <h2 style="font-size:2rem; color:var(--primary-color);">¥45,000</h2>
+                </div>
+                <button class="btn-primary btn-ripple" id="confirmAdvance">
+                    <span class="en-text">Request ¥10,000 Advance</span>
+                    <span class="jp-text">¥10,000 の前払いを申請</span>
+                </button>
+                <button class="btn-outline btn-ripple close-modal" style="width: 100%; margin-top: 12px; border: none;">
+                    <span class="en-text">Cancel</span>
+                    <span class="jp-text">キャンセル</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Emergency Leave Modal -->
+        <div class="modal-overlay" id="modalLeave">
+            <div class="slide-panel">
+                <div class="panel-drag-handle"></div>
+                <h3 style="margin-bottom: 20px; text-align: center;">
+                    <span class="en-text">Request Emergency Leave</span>
+                    <span class="jp-text">緊急休暇の申請</span>
+                </h3>
+                <p style="font-size:0.85rem; color:var(--danger); margin-bottom:16px; text-align:center;">
+                    <span class="en-text">* Medical certificate or official proof is REQUIRED to prevent unexcused absence.</span>
+                    <span class="jp-text">※無断欠勤を防ぐため、診断書などの証明書のアップロードが「必須」です。</span>
+                </p>
+                <div class="upload-box">
+                    <i data-feather="camera" style="width:32px; height:32px;"></i>
+                    <p>
+                        <span class="en-text">Take Photo of Receipt / Note</span>
+                        <span class="jp-text">診断書をカメラで撮影</span>
+                    </p>
+                </div>
+                <button class="btn-primary btn-ripple" id="confirmLeave">
+                    <span class="en-text">Submit Evidence & Request</span>
+                    <span class="jp-text">証明書を提出して休む</span>
+                </button>
+                <button class="btn-outline btn-ripple close-modal" style="width: 100%; margin-top: 12px; border: none;">
+                    <span class="en-text">Cancel</span>
+                    <span class="jp-text">キャンセル</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SOS Modal -->
+        <div class="modal-overlay" id="modalSOS">
+            <div class="slide-panel">
+                <div class="panel-drag-handle"></div>
+                <h3 style="margin-bottom: 20px; text-align: center; color:var(--danger);">
+                    <span class="en-text">Emergency SOS</span>
+                    <span class="jp-text">緊急SOSアラート</span>
+                </h3>
+                <div class="sos-alert-box">
+                    <span class="en-text">This will instantly send your exact GPS location and an emergency alert to your Manager and the Factory Supervisor.</span>
+                    <span class="jp-text">現在地のGPS情報と緊急通知を、派遣先工場長と自社マネージャーに一斉送信します。</span>
+                </div>
+                <button class="btn-primary btn-ripple btn-danger" id="confirmSOS">
+                    <span class="en-text">Send SOS Alert</span>
+                    <span class="jp-text">SOSを送信する</span>
+                </button>
+                <button class="btn-outline btn-ripple close-modal" style="width: 100%; margin-top: 12px; border: none;">
+                    <span class="en-text">Cancel</span>
+                    <span class="jp-text">キャンセル</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>feather.replace();</script>
+</body>
+</html>

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Staff Crew</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* ================================================
+           RESET & BASE
+           ================================================ */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Sans JP', -apple-system, sans-serif;
+            background: #0B1120;
+            color: #1E293B;
+            -webkit-font-smoothing: antialiased;
+            touch-action: pan-y;
+        }
+
+        /* ================================================
+           LANGUAGE SYSTEM
+           Using html-level class for maximum specificity
+           ================================================ */
+        .t-en, .t-np { display: none; }
+        html.en .t-jp { display: none; }
+        html.en .t-en { display: inline; }
+        html.np .t-jp { display: none; }
+        html.np .t-np { display: inline; }
+
+        /* ================================================
+           LANGUAGE CAPSULE (Top Right)
+           ================================================ */
+        .lang-pill {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 500;
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .lang-pill button {
+            padding: 7px 13px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.55);
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .lang-pill button.on {
+            background: #2563EB;
+            color: #fff;
+        }
+
+        .lang-pill button + button {
+            border-left: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* Adapt pill for light backgrounds */
+        body.light-slide .lang-pill {
+            background: rgba(0,0,0,0.04);
+            border-color: rgba(0,0,0,0.06);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        body.light-slide .lang-pill button {
+            color: rgba(0,0,0,0.35);
+        }
+
+        body.light-slide .lang-pill button.on {
+            background: #2563EB;
+            color: #fff;
+        }
+
+        body.light-slide .lang-pill button + button {
+            border-left-color: rgba(0,0,0,0.06);
+        }
+
+        /* ================================================
+           SLIDER ENGINE
+           ================================================ */
+        .deck {
+            display: flex;
+            height: 100%;
+            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+
+        .s {
+            min-width: 100vw;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        .s-inner {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 64px 60px 110px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 769px) {
+            .s-inner { padding-left: 32px; padding-right: 32px; }
+        }
+
+        /* ================================================
+           NAVIGATION DOTS
+           ================================================ */
+        .dots {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 400;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .dots .d {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            transition: all 0.35s ease;
+            cursor: pointer;
+        }
+
+        .dots .d.on {
+            width: 22px;
+            border-radius: 4px;
+            background: #2563EB;
+        }
+
+        /* ================================================
+           ARROW BUTTONS (Solid, Clear, Non-overlapping)
+           ================================================ */
+        .arr {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 400;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #FFFFFF;
+            color: #1E293B;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .arr:active { transform: translateY(-50%) scale(0.88); background: #F1F5F9; }
+        .arr.l { left: 6px; }
+        .arr.r { right: 6px; }
+        .arr.off { opacity: 0; pointer-events: none; }
+
+        /* Tap hint (disappears after first slide change) */
+        .tap-hint {
+            position: fixed;
+            bottom: 58px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 400;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: rgba(255,255,255,0.65);
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 7px 18px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: opacity 0.4s;
+        }
+
+        .tap-hint.gone { opacity: 0; pointer-events: none; }
+
+        /* ================================================
+           SLIDE BACKGROUNDS
+           ================================================ */
+        .bg-hero   { background: linear-gradient(145deg, #0B1120 0%, #1E3A8A 50%, #2563EB 100%); color: #fff; }
+        .bg-white  { background: #FFFFFF; color: #1E293B; }
+        .bg-gray   { background: #F8FAFC; color: #1E293B; }
+        .bg-blue   { background: linear-gradient(145deg, #1E3A8A 0%, #2563EB 100%); color: #fff; }
+        .bg-dark   { background: #0B1120; color: #fff; }
+
+        /* ================================================
+           HERO SLIDE
+           ================================================ */
+        .hero-inner { text-align: center; align-items: center; }
+
+        .hero-icon {
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 36px;
+        }
+
+        .hero-inner h1 {
+            font-size: 2.1rem;
+            font-weight: 900;
+            line-height: 1.25;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+        }
+
+        .hero-inner .sub {
+            font-size: 1rem;
+            line-height: 1.85;
+            opacity: 0.65;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* ================================================
+           SECTION INTRO SLIDES
+           ================================================ */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 22px;
+            width: fit-content;
+        }
+
+        .chip-b { background: #EFF6FF; color: #2563EB; }
+        .chip-r { background: #FEF2F2; color: #EF4444; }
+        .chip-g { background: #ECFDF5; color: #10B981; }
+        .chip-w { background: rgba(255,255,255,0.12); color: #fff; }
+
+        .s h2 {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 14px;
+            letter-spacing: -0.5px;
+        }
+
+        .lead {
+            font-size: 0.92rem;
+            line-height: 1.85;
+            opacity: 0.6;
+            margin-bottom: 28px;
+        }
+
+        .bg-blue .lead { color: rgba(255,255,255,0.65); }
+
+        /* ================================================
+           PROBLEM CARDS
+           ================================================ */
+        .cards { display: flex; flex-direction: column; gap: 12px; }
+
+        .card-p {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            background: #FFFFFF;
+            border: 1px solid #FDE68A;
+            border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+
+        .card-p .ic {
+            width: 40px; height: 40px; min-width: 40px;
+            background: #FEF3C7;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            color: #F59E0B;
+        }
+
+        .card-p h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 3px; color: #1E293B; }
+        .card-p p  { font-size: 0.8rem; color: #64748B; line-height: 1.6; }
+
+        /* ================================================
+           SOLUTION CARDS
+           ================================================ */
+        .card-s {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+
+        .card-s .ic {
+            width: 40px; height: 40px; min-width: 40px;
+            background: #EFF6FF;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            color: #2563EB;
+        }
+
+        .card-s h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 3px; color: #1E293B; }
+        .card-s p  { font-size: 0.8rem; color: #64748B; line-height: 1.6; }
+
+        /* ================================================
+           PROTOTYPE PRELOADER
+           ================================================ */
+        .pre { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 60px 0; }
+        .pre.off { display: none; }
+
+        .spinner {
+            width: 48px; height: 48px;
+            border: 3px solid #E2E8F0;
+            border-top-color: #2563EB;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pre-txt { font-size: 0.9rem; font-weight: 600; color: #64748B; }
+
+        .proto { display: none; width: 100%; }
+        .proto.on { display: block; animation: pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes pop {
+            from { opacity: 0; transform: scale(0.94) translateY(12px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* ================================================
+           PHONE MOCKUP (For Worker App Proto)
+           ================================================ */
+        .phone {
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+            background: #FFF;
+            border-radius: 28px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .phone-head {
+            padding: 18px 18px 14px;
+            background: #FFF;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .phone-head h3 { font-size: 1.05rem; font-weight: 700; }
+        .phone-head p { font-size: 0.75rem; color: #94A3B8; margin-top: 2px; }
+
+        .phone-body { padding: 14px; }
+
+        .phone-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 18px;
+            border-top: 1px solid #F1F5F9;
+            background: #FFF;
+        }
+
+        .phone-nav .tab {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 0.58rem; font-weight: 500; color: #94A3B8;
+        }
+
+        .phone-nav .tab.act { color: #2563EB; }
+
+        /* ================================================
+           DASHBOARD MOCKUP
+           ================================================ */
+        .dash {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            background: #FFF;
+            border-radius: 20px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .dash-head {
+            padding: 18px; background: #FFF;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .dash-head h3 { font-size: 1.05rem; font-weight: 700; }
+        .dash-head p { font-size: 0.75rem; color: #94A3B8; margin-top: 2px; }
+        .dash-body { padding: 14px; }
+
+        .kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+        .kcard {
+            background: #F8FAFC; border: 1px solid #E2E8F0;
+            border-radius: 12px; padding: 13px;
+        }
+
+        .kcard label { font-size: 0.65rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kcard .num { font-size: 1.35rem; font-weight: 700; margin-top: 4px; }
+
+        /* ================================================
+           SHARED UI ELEMENTS
+           ================================================ */
+        .mini-card {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .mini-card-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .mini-card-top span { font-size: 0.85rem; font-weight: 600; }
+
+        .tag { font-size: 0.65rem; font-weight: 600; padding: 3px 9px; border-radius: 7px; }
+        .tag-b { background: #EFF6FF; color: #2563EB; }
+        .tag-r { background: #FEF2F2; color: #EF4444; }
+
+        .row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+
+        .row-ic {
+            width: 34px; height: 34px; min-width: 34px;
+            background: #EFF6FF; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: #2563EB;
+        }
+
+        .row h4 { font-size: 0.85rem; font-weight: 600; }
+        .row p { font-size: 0.72rem; color: #94A3B8; }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: transform 0.15s;
+        }
+
+        .btn:active { transform: scale(0.96); }
+        .btn-blue { background: #2563EB; color: #fff; }
+        .btn-red  { background: #EF4444; color: #fff; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+        .btn-tile {
+            padding: 14px 8px;
+            background: #FFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+
+        .btn-tile:active { background: #EFF6FF; border-color: #2563EB; }
+        .btn-tile h5 { font-size: 0.75rem; font-weight: 600; margin-top: 7px; color: #1E293B; }
+
+        /* ================================================
+           TIMESHEET TABLE
+           ================================================ */
+        .tbl { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+        .tbl th { background: #F1F5F9; padding: 7px 5px; text-align: center; font-weight: 600; border: 1px solid #E2E8F0; color: #475569; }
+        .tbl td { padding: 6px 5px; text-align: center; border: 1px solid #E2E8F0; color: #334155; }
+        .tbl .total { background: #F1F5F9; font-weight: 700; }
+
+        .hanko {
+            width: 56px; height: 56px;
+            border: 3px solid #DC2626;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #DC2626;
+            font-size: 0.8rem;
+            font-weight: 900;
+            margin: 0 auto 10px;
+            transform: rotate(-6deg);
+        }
+
+        /* ================================================
+           TOAST FEEDBACK
+           ================================================ */
+        .toast {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            background: rgba(10,20,40,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #fff;
+            padding: 28px 44px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            z-index: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            line-height: 1.6;
+        }
+
+        .toast.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        .toast .ok {
+            width: 48px; height: 48px;
+            background: rgba(16,185,129,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+            color: #10B981;
+        }
+
+        /* ================================================
+           CLOSING SLIDE
+           ================================================ */
+        .close-inner {
+            text-align: center;
+            align-items: center;
+        }
+
+        .close-inner h2 {
+            font-size: 1.85rem;
+            line-height: 1.3;
+        }
+
+        .close-inner .sub {
+            margin-top: 18px;
+            font-size: 0.95rem;
+            opacity: 0.55;
+            line-height: 1.85;
+            max-width: 340px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ================================================
+           ALERT BOX (Compliance)
+           ================================================ */
+        .alert-box {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .alert-box .alert-title {
+            font-size: 0.82rem; font-weight: 700; color: #991B1B;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .alert-box .alert-row {
+            font-size: 0.78rem; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .alert-box .alert-row.red { color: #B91C1C; }
+        .alert-box .alert-row.amber { color: #92400E; }
+    </style>
+</head>
+<body>
+
+<!-- LANGUAGE PILL -->
+<div class="lang-pill" id="langPill">
+    <button class="on" data-l="jp">日本語</button>
+    <button data-l="en">English</button>
+    <button data-l="np">नेपाली</button>
+</div>
+
+<!-- DOTS -->
+<div class="dots" id="dots"></div>
+
+<!-- ARROWS -->
+<button class="arr l off" id="al"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
+<button class="arr r" id="ar"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
+
+<!-- TAP HINT -->
+<div class="tap-hint" id="hint">
+    <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+    <span class="t-jp">右の矢印をタップ</span><span class="t-en">Tap the right arrow</span><span class="t-np">दायाँ तीर थिच्नुहोस्</span>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================== DECK ============================== -->
+<div class="deck" id="deck">
+
+<!-- S0: HERO -->
+<div class="s bg-hero" data-bg="dark">
+    <div class="s-inner hero-inner">
+        <div class="hero-icon"><i data-lucide="briefcase" style="width:36px;height:36px;color:#fff;"></i></div>
+        <h1><span class="t-jp">次世代の<br>外国人材管理システム</span><span class="t-en">Next-Gen Foreign<br>Staff Management</span><span class="t-np">नयाँ पुस्ताको विदेशी<br>कर्मचारी व्यवस्थापन</span></h1>
+        <p class="sub"><span class="t-jp">不正打刻をゼロに。コンプライアンスを自動化。派遣先からの絶対的な信用を獲得する。</span><span class="t-en">Eliminate fake clock-ins. Automate compliance. Win absolute trust from your clients.</span><span class="t-np">नक्कली हाजिरी शून्यमा। कानुनी अनुपालन स्वचालित। ग्राहकको पूर्ण विश्वास जित्नुहोस्।</span></p>
+    </div>
+</div>
+
+<!-- S1: WORKER APP INTRO -->
+<div class="s bg-blue" data-bg="dark">
+    <div class="s-inner">
+        <div class="chip chip-w"><i data-lucide="smartphone" style="width:14px;"></i> <span class="t-jp">セクション 1</span><span class="t-en">Section 1</span><span class="t-np">भाग १</span></div>
+        <h2><span class="t-jp">ワーカーアプリ</span><span class="t-en">Worker App</span><span class="t-np">वर्कर एप</span></h2>
+        <p class="lead"><span class="t-jp">外国人スタッフのスマートフォンにインストールするアプリです。出退勤、休暇申請、給与確認がすべてこのアプリで完結します。</span><span class="t-en">An app installed on each foreign worker's phone. Attendance, leave, salary — all managed from one place.</span><span class="t-np">विदेशी कर्मचारीको फोनमा राखिने एप। हाजिरी, बिदा, तलब — सबै एकै ठाउँबाट।</span></p>
+    </div>
+</div>
+
+<!-- S2: WORKER PROBLEMS -->
+<div class="s bg-gray" data-bg="light">
+    <div class="s-inner">
+        <div class="chip chip-r"><i data-lucide="alert-triangle" style="width:14px;"></i> <span class="t-jp">現在の課題</span><span class="t-en">Current Problems</span><span class="t-np">हालको समस्या</span></div>
+        <div class="cards">
+            <div class="card-p"><div class="ic"><i data-lucide="users" style="width:20px;"></i></div><div><h4><span class="t-jp">なりすまし打刻</span><span class="t-en">Buddy Punching</span><span class="t-np">नक्कली हाजिरी</span></h4><p><span class="t-jp">友人に代わりにタイムカードを押してもらう不正が発生。紙では防止不可能です。</span><span class="t-en">Workers ask friends to clock in for them. Paper timecards cannot prevent this.</span><span class="t-np">साथीले हाजिरी हालिदिन्छन्। कागजी प्रणालीले रोक्न सक्दैन।</span></p></div></div>
+            <div class="card-p"><div class="ic"><i data-lucide="thermometer" style="width:20px;"></i></div><div><h4><span class="t-jp">証拠のない「体調不良」欠勤</span><span class="t-en">Unverified Sick Leaves</span><span class="t-np">प्रमाणबिनाको बिरामी बिदा</span></h4><p><span class="t-jp">電話一本で欠勤。仮病か確認する手段がありません。</span><span class="t-en">One phone call to call in sick. No way to verify.</span><span class="t-np">एउटा फोनमा बिरामी। जाँच्ने उपाय छैन।</span></p></div></div>
+            <div class="card-p"><div class="ic"><i data-lucide="log-out" style="width:20px;"></i></div><div><h4><span class="t-jp">突然の退職</span><span class="t-en">Sudden Quits</span><span class="t-np">अचानक छोड्ने</span></h4><p><span class="t-jp">給料日前にお金が必要になり、日払いの違法な仕事に流れてしまいます。</span><span class="t-en">Workers need cash before payday and leave for illegal daily-pay jobs.</span><span class="t-np">तलब अघि पैसा चाहिँदा गैरकानुनी दैनिक कामतिर जान्छन्।</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- S3: WORKER SOLUTIONS -->
+<div class="s bg-white" data-bg="light">
+    <div class="s-inner">
+        <div class="chip chip-g"><i data-lucide="check-circle" style="width:14px;"></i> <span class="t-jp">解決策</span><span class="t-en">Solutions</span><span class="t-np">समाधान</span></div>
+        <div class="cards">
+            <div class="card-s"><div class="ic"><i data-lucide="map-pin" style="width:20px;"></i></div><div><h4><span class="t-jp">GPS位置認証</span><span class="t-en">GPS Lock</span><span class="t-np">GPS लक</span></h4><p><span class="t-jp">工場の半径100m以内でしか出勤ボタンを押せません。</span><span class="t-en">Clock-in only works within 100m of the factory.</span><span class="t-np">कारखानाबाट १०० मिटर भित्रमा मात्र हाजिरी हाल्न सकिन्छ।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="scan-face" style="width:20px;"></i></div><div><h4><span class="t-jp">顔認証チェックイン</span><span class="t-en">Face Verification</span><span class="t-np">अनुहार प्रमाणीकरण</span></h4><p><span class="t-jp">出勤時に本人の顔を撮影。なりすましを100%防止。</span><span class="t-en">Live selfie required. 100% impersonation prevention.</span><span class="t-np">सेल्फी अनिवार्य। नक्कल १००% रोकिन्छ।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="file-check" style="width:20px;"></i></div><div><h4><span class="t-jp">診断書の強制提出</span><span class="t-en">Mandatory Medical Proof</span><span class="t-np">अनिवार्य चिकित्सा प्रमाण</span></h4><p><span class="t-jp">病院の証明なしでは休暇が承認されません。</span><span class="t-en">No leave without a doctor's certificate photo.</span><span class="t-np">डाक्टरको प्रमाण बिना बिदा हुँदैन।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="wallet" style="width:20px;"></i></div><div><h4><span class="t-jp">給与前払いウォレット</span><span class="t-en">Salary Advance Wallet</span><span class="t-np">तलब अग्रिम वालेट</span></h4><p><span class="t-jp">働いた分から即座に引き出し可能。突然の退職を防止。</span><span class="t-en">Instant withdrawal from earned wages. Prevents quits.</span><span class="t-np">कमाएको तलबबाट तुरुन्त निकाल्न सकिन्छ।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="languages" style="width:20px;"></i></div><div><h4><span class="t-jp">自動翻訳チャット</span><span class="t-en">Auto-Translate Chat</span><span class="t-np">स्वचालित अनुवाद च्याट</span></h4><p><span class="t-jp">ネパール語⇔日本語をリアルタイム翻訳。言葉の壁を解消。</span><span class="t-en">Nepali ⇔ Japanese real-time translation.</span><span class="t-np">नेपाली ⇔ जापानी तुरुन्त अनुवाद।</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!<!-- S4: WORKER PROTOTYPE -->
+<div class="s bg-gray" data-bg="light">
+    <div class="s-inner" style="text-align:center;">
+        <i data-lucide="smartphone" style="width:64px;height:64px;color:#2563EB;margin:0 auto 24px;"></i>
+        <h2>
+            <span class="t-jp">ワーカーアプリを体験する</span>
+            <span class="t-en">Experience the Worker App</span>
+            <span class="t-np">वर्कर एप अनुभव गर्नुहोस्</span>
+        </h2>
+        <p class="lead" style="margin-bottom:40px;">
+            <span class="t-jp">下のボタンをタップすると、実際のアプリ画面が開きます。GPS出勤や給与前払い機能を直接操作して体験してください。</span>
+            <span class="t-en">Tap the button below to open the standalone app. Try the GPS check-in and salary advance features yourself.</span>
+            <span class="t-np">तलको बटन थिचेर एप खोल्नुहोस्। आफैंले GPS हाजिरी र तलब अग्रिम सुविधाहरू चलाएर हेर्नुहोस्।</span>
+        </p>
+        <a href="worker-app.html" target="_blank" class="btn btn-blue" style="display:flex; text-decoration:none; padding:18px; font-size:1.05rem; border-radius:14px; box-shadow:0 10px 25px rgba(37,99,235,0.3);">
+            <span class="t-jp">プロトタイプを開く</span>
+            <span class="t-en">Open Prototype</span>
+            <span class="t-np">प्रोटोटाइप खोल्नुहोस्</span>
+            <i data-lucide="external-link" style="width:18px;margin-left:8px;"></i>
+        </a>
+    </div>
+</div>
+
+<!-- S5: DASHBOARD INTRO -->
+<div class="s bg-blue" data-bg="dark">
+    <div class="s-inner">
+        <div class="chip chip-w"><i data-lucide="layout-dashboard" style="width:14px;"></i> <span class="t-jp">セクション 2</span><span class="t-en">Section 2</span><span class="t-np">भाग २</span></div>
+        <h2><span class="t-jp">管理ダッシュボード</span><span class="t-en">Agency Dashboard</span><span class="t-np">व्यवस्थापन ड्यासबोर्ड</span></h2>
+        <p class="lead"><span class="t-jp">Staff Crewの社内スタッフが毎日使う管理画面です。稼働状況、法令遵守、緊急対応をすべて一画面で管理します。</span><span class="t-en">The daily control center for Staff Crew's HR team. Attendance, compliance, and emergencies in one screen.</span><span class="t-np">Staff Crew को HR टोलीको दैनिक नियन्त्रण केन्द्र। हाजिरी, कानुनी अनुपालन, र आपतकालीन एकै ठाउँमा।</span></p>
+    </div>
+</div>
+
+<!-- S6: DASHBOARD PROBLEMS -->
+<div class="s bg-gray" data-bg="light">
+    <div class="s-inner">
+        <div class="chip chip-r"><i data-lucide="alert-triangle" style="width:14px;"></i> <span class="t-jp">現在の課題</span><span class="t-en">Current Problems</span><span class="t-np">हालको समस्या</span></div>
+        <div class="cards">
+            <div class="card-p"><div class="ic"><i data-lucide="file-spreadsheet" style="width:20px;"></i></div><div><h4><span class="t-jp">エクセルと電話だけの管理</span><span class="t-en">Spreadsheets & Phone Calls</span><span class="t-np">एक्सेल र फोन मात्र</span></h4><p><span class="t-jp">500名以上をエクセルだけで管理するのは限界。給与計算に膨大な時間がかかります。</span><span class="t-en">Managing 500+ workers with spreadsheets is impossible. Payroll takes enormous time.</span><span class="t-np">५०० भन्दा बढी कर्मचारीलाई एक्सेलले व्यवस्थापन गर्न असम्भव।</span></p></div></div>
+            <div class="card-p"><div class="ic"><i data-lucide="shield-alert" style="width:20px;"></i></div><div><h4><span class="t-jp">法令違反のリスク</span><span class="t-en">Legal Compliance Risk</span><span class="t-np">कानुनी जोखिम</span></h4><p><span class="t-jp">留学生の28時間制限や在留カード期限を、人の目だけで管理するのは危険です。</span><span class="t-en">Tracking 28-hour limits and visa expiry manually is extremely dangerous.</span><span class="t-np">२८ घण्टा सीमा र भिसा म्याद म्यानुअल ट्र्याक गर्नु जोखिमपूर्ण।</span></p></div></div>
+            <div class="card-p"><div class="ic"><i data-lucide="phone-missed" style="width:20px;"></i></div><div><h4><span class="t-jp">急な欠勤への対応が遅い</span><span class="t-en">Slow Response to Absences</span><span class="t-np">अनुपस्थितिमा ढिलो प्रतिक्रिया</span></h4><p><span class="t-jp">代わりのスタッフを探すのに何時間もかかり、工場ラインが止まります。</span><span class="t-en">Finding replacements takes hours. Factory lines stop.</span><span class="t-np">प्रतिस्थापन खोज्न घण्टौं लाग्छ। लाइन रोकिन्छ。</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- S7: DASHBOARD SOLUTIONS -->
+<div class="s bg-white" data-bg="light">
+    <div class="s-inner">
+        <div class="chip chip-g"><i data-lucide="check-circle" style="width:14px;"></i> <span class="t-jp">解決策</span><span class="t-en">Solutions</span><span class="t-np">समाधान</span></div>
+        <div class="cards">
+            <div class="card-s"><div class="ic"><i data-lucide="map" style="width:20px;"></i></div><div><h4><span class="t-jp">リアルタイム稼働マップ</span><span class="t-en">Live Dispatch Map</span><span class="t-np">लाइभ नक्सा</span></h4><p><span class="t-jp">どの工場に誰が出勤しているか、リアルタイムで把握。</span><span class="t-en">See who is at which factory, in real time.</span><span class="t-np">कुन कारखानामा को छ, तुरुन्त हेर्नुहोस्।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="shield-check" style="width:20px;"></i></div><div><h4><span class="t-jp">コンプライアンス自動警告</span><span class="t-en">Auto Compliance Alerts</span><span class="t-np">स्वचालित कानुनी चेतावनी</span></h4><p><span class="t-jp">28時間制限・ビザ期限を自動で監視し、事前に通知。</span><span class="t-en">Auto-monitoring of 28h limits and visa expiry dates.</span><span class="t-np">२८ घण्टा सीमा र भिसा म्याद स्वचालित निगरानी।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="radio" style="width:20px;"></i></div><div><h4><span class="t-jp">緊急ヘルプ一斉配信</span><span class="t-en">SOS Shift Broadcast</span><span class="t-np">आपतकालीन शिफ्ट प्रसारण</span></h4><p><span class="t-jp">欠員が出たら、近くの待機スタッフに即座にプッシュ通知。</span><span class="t-en">Instantly notify nearby off-duty workers to fill gaps.</span><span class="t-np">नजिकका कर्मचारीलाई तुरुन्त सूचना।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="calculator" style="width:20px;"></i></div><div><h4><span class="t-jp">自動給与計算</span><span class="t-en">Auto Payroll</span><span class="t-np">स्वचालित तलब गणना</span></h4><p><span class="t-jp">GPS出退勤データから残業・深夜手当を自動算出。手入力ゼロ。</span><span class="t-en">Overtime and night pay auto-calculated from GPS data.</span><span class="t-np">GPS बाट ओभरटाइम र रात्रि भत्ता स्वचालित गणना।</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- S8: DASHBOARD PROTOTYPE -->
+<div class="s bg-gray" data-bg="light">
+    <div class="s-inner" style="text-align:center;">
+        <i data-lucide="monitor" style="width:64px;height:64px;color:#2563EB;margin:0 auto 24px;"></i>
+        <h2>
+            <span class="t-jp">ダッシュボードを体験する</span>
+            <span class="t-en">Experience the Dashboard</span>
+            <span class="t-np">ड्यासबोर्ड अनुभव गर्नुहोस्</span>
+        </h2>
+        <p class="lead" style="margin-bottom:40px;">
+            <span class="t-jp">管理者が使用する実際のダッシュボード画面を開きます。コンプライアンス警告やマップ機能を操作できます。</span>
+            <span class="t-en">Open the live dashboard used by your HR team. Interact with compliance alerts and real-time maps.</span>
+            <span class="t-np">तपाईंको HR टोलीले प्रयोग गर्ने लाइभ ड्यासबोर्ड खोल्नुहोस्।</span>
+        </p>
+        <a href="dashboard.html" target="_blank" class="btn btn-blue" style="display:flex; text-decoration:none; padding:18px; font-size:1.05rem; border-radius:14px; box-shadow:0 10px 25px rgba(37,99,235,0.3);">
+            <span class="t-jp">プロトタイプを開く</span>
+            <span class="t-en">Open Prototype</span>
+            <span class="t-np">प्रोटोटाइप खोल्नुहोस्</span>
+            <i data-lucide="external-link" style="width:18px;margin-left:8px;"></i>
+        </a>
+    </div>
+</div>
+
+<!-- S9: CLIENT PORTAL INTRO -->
+<div class="s bg-blue" data-bg="dark">
+    <div class="s-inner">
+        <div class="chip chip-w"><i data-lucide="file-text" style="width:14px;"></i> <span class="t-jp">セクション 3</span><span class="t-en">Section 3</span><span class="t-np">भाग ३</span></div>
+        <h2><span class="t-jp">派遣先ポータル<br>（デジタル勤務表）</span><span class="t-en">Client Portal<br>(Digital Timesheet)</span><span class="t-np">ग्राहक पोर्टल<br>(डिजिटल हाजिरी पत्र)</span></h2>
+        <p class="lead"><span class="t-jp">派遣先の工場長にLINEでURLを送るだけ。パスワード不要。クリック一つで勤務表を確認・承認できます。</span><span class="t-en">Send a URL to the factory manager via LINE. No password. One click to verify and approve timesheets.</span><span class="t-np">कारखाना प्रबन्धकलाई LINE बाट URL पठाउनुहोस्। पासवर्ड चाहिँदैन। एक क्लिकमा हाजिरी पत्र जाँच।</span></p>
+    </div>
+</div>
+
+<!-- S10: CLIENT PROBLEMS -->
+<div class="s bg-gray" data-bg="light">
+    <div class="s-inner">
+        <div class="chip chip-r"><i data-lucide="alert-triangle" style="width:14px;"></i> <span class="t-jp">現在の課題</span><span class="t-en">Current Problems</span><span class="t-np">हालको समस्या</span></div>
+        <div class="cards">
+            <div class="card-p"><div class="ic"><i data-lucide="clock" style="width:20px;"></i></div><div><h4><span class="t-jp">紙の勤務表で承認が遅い</span><span class="t-en">Paper Timesheets Cause Delays</span><span class="t-np">कागजी हाजिरीले ढिलाइ</span></h4><p><span class="t-jp">月末に紙を届けて印鑑をもらうのに何日もかかり、給与支払いが遅延。</span><span class="t-en">Delivering paper and collecting stamps takes days. Payroll delayed.</span><span class="t-np">कागज पुर्‍याउन र छाप लिन दिनौं लाग्छ।</span></p></div></div>
+            <div class="card-p"><div class="ic"><i data-lucide="message-circle-warning" style="width:20px;"></i></div><div><h4><span class="t-jp">残業時間の「言った言わない」</span><span class="t-en">Overtime Disputes</span><span class="t-np">ओभरटाइम विवाद</span></h4><p><span class="t-jp">手書き記録では正確な残業証明が困難。毎月トラブル発生。</span><span class="t-en">Handwritten records make overtime proof difficult.</span><span class="t-np">हस्तलिखित रेकर्डले ओभरटाइम प्रमाण गाह्रो।</span></p></div></div>
+            <div class="card-p"><div class="ic"><i data-lucide="eye-off" style="width:20px;"></i></div><div><h4><span class="t-jp">月中の出勤状況が見えない</span><span class="t-en">No Mid-Month Visibility</span><span class="t-np">बीचमा हाजिरी देखिँदैन</span></h4><p><span class="t-jp">工場長は月末の紙が届くまで状況を把握できません。</span><span class="t-en">Managers cannot check attendance until month-end.</span><span class="t-np">महिनाको अन्त्यसम्म प्रबन्धकले हाजिरी जाँच्न सक्दैनन्।</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- S11: CLIENT SOLUTIONS -->
+<div class="s bg-white" data-bg="light">
+    <div class="s-inner">
+        <div class="chip chip-g"><i data-lucide="check-circle" style="width:14px;"></i> <span class="t-jp">解決策</span><span class="t-en">Solutions</span><span class="t-np">समाधान</span></div>
+        <div class="cards">
+            <div class="card-s"><div class="ic"><i data-lucide="file-text" style="width:20px;"></i></div><div><h4><span class="t-jp">デジタル勤務表（自動生成）</span><span class="t-en">Auto-Generated Timesheet</span><span class="t-np">स्वचालित हाजिरी पत्र</span></h4><p><span class="t-jp">紙と同じフォーマットで自動生成。残業も自動計算。</span><span class="t-en">Same paper format, auto-generated. Overtime auto-calculated.</span><span class="t-np">कागजी ढाँचामा स्वचालित। ओभरटाइम पनि।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="stamp" style="width:20px;"></i></div><div><h4><span class="t-jp">デジタル印鑑（ワンタップ承認）</span><span class="t-en">Digital Hanko (1-Tap Approve)</span><span class="t-np">डिजिटल छाप (१ ट्याप)</span></h4><p><span class="t-jp">スマホでボタンを一つ押すだけで承認完了。紙の印鑑は不要。</span><span class="t-en">One tap to approve. No paper stamps needed.</span><span class="t-np">एक ट्यापमा स्वीकृत। कागजी छाप चाहिँदैन।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="link" style="width:20px;"></i></div><div><h4><span class="t-jp">マジックリンク</span><span class="t-en">Magic Link</span><span class="t-np">म्याजिक लिंक</span></h4><p><span class="t-jp">LINEでURLを送るだけ。ログインもパスワードも不要。</span><span class="t-en">Just send a URL. No login or password required.</span><span class="t-np">URL पठाउनुहोस्। लगइन वा पासवर्ड चाहिँदैन।</span></p></div></div>
+            <div class="card-s"><div class="ic"><i data-lucide="handshake" style="width:20px;"></i></div><div><h4><span class="t-jp">圧倒的な「信用」の構築</span><span class="t-en">Build Absolute Trust</span><span class="t-np">पूर्ण विश्वास निर्माण</span></h4><p><span class="t-jp">埼玉でここまでのシステムを持つ派遣会社は他にありません。</span><span class="t-en">No agency in Saitama has a system this advanced.</span><span class="t-np">साइतामामा यस्तो प्रणाली भएको अर्को एजेन्सी छैन।</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- S12: TIMESHEET PROTOTYPE -->
+<div class="s bg-gray" data-bg="light">
+    <div class="s-inner" style="text-align:center;">
+        <i data-lucide="file-check" style="width:64px;height:64px;color:#2563EB;margin:0 auto 24px;"></i>
+        <h2>
+            <span class="t-jp">デジタル勤務表を体験する</span>
+            <span class="t-en">Experience the Digital Timesheet</span>
+            <span class="t-np">डिजिटल हाजिरी पत्र अनुभव गर्नुहोस्</span>
+        </h2>
+        <p class="lead" style="margin-bottom:40px;">
+            <span class="t-jp">工場長に送られるリンクを開きます。パスワードなしでデジタル印鑑を押す体験ができます。</span>
+            <span class="t-en">Open the link sent to the factory manager. Try approving a timesheet with a digital hanko stamp.</span>
+            <span class="t-np">प्रबन्धकलाई पठाइएको लिंक खोल्नुहोस्। डिजिटल छाप लगाएर हाजिरी पत्र स्वीकृत गर्नुहोस्।</span>
+        </p>
+        <a href="timesheet-report.html" target="_blank" class="btn btn-blue" style="display:flex; text-decoration:none; padding:18px; font-size:1.05rem; border-radius:14px; box-shadow:0 10px 25px rgba(37,99,235,0.3);">
+            <span class="t-jp">プロトタイプを開く</span>
+            <span class="t-en">Open Prototype</span>
+            <span class="t-np">प्रोटोटाइप खोल्नुहोस्</span>
+            <i data-lucide="external-link" style="width:18px;margin-left:8px;"></i>
+        </a>
+    </div>
+</div>
+
+</div>
+
+<!-- S13: CLOSING -->
+<div class="s bg-dark" data-bg="dark">
+    <div class="s-inner close-inner">
+        <div style="margin-bottom:28px;"><i data-lucide="rocket" style="width:52px;height:52px;color:#2563EB;"></i></div>
+        <h2><span class="t-jp">Staff Crew を、<br>テクノロジー企業へ。</span><span class="t-en">Transform Staff Crew<br>into a Tech Company.</span><span class="t-np">Staff Crew लाई<br>टेक कम्पनी बनाउनुहोस्।</span></h2>
+        <p class="sub"><span class="t-jp">このシステムは、御社の最大の競争優位性になります。埼玉で、ここまでのテクノロジーを持っている派遣会社は他にありません。</span><span class="t-en">This system is your greatest competitive advantage. No other agency in Saitama has technology like this.</span><span class="t-np">यो प्रणाली तपाईंको सबैभन्दा ठूलो प्रतिस्पर्धात्मक फाइदा हो। साइतामामा यस्तो प्रविधि अर्को कसैसँग छैन।</span></p>
+    </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ============================================ JS ============================================ -->
+<script>
+    lucide.createIcons();
+
+    const deck = document.getElementById('deck');
+    const slides = document.querySelectorAll('.s');
+    const total = slides.length;
+    let cur = 0, sx = 0, cx = 0, drag = false;
+
+    // Build dots
+    const dotsEl = document.getElementById('dots');
+    for (let i = 0; i < total; i++) {
+        const d = document.createElement('div');
+        d.className = 'd' + (i === 0 ? ' on' : '');
+        d.onclick = () => go(i);
+        dotsEl.appendChild(d);
+    }
+
+    function go(i) {
+        if (i < 0 || i >= total) return;
+        cur = i;
+        deck.style.transform = `translateX(-${cur * 100}vw)`;
+
+        // Dots
+        dotsEl.querySelectorAll('.d').forEach((d, idx) => d.classList.toggle('on', idx === cur));
+
+        // Arrows
+        document.getElementById('al').classList.toggle('off', cur === 0);
+        document.getElementById('ar').classList.toggle('off', cur >= total - 1);
+
+        // Hint
+        const hint = document.getElementById('hint');
+        if (hint && cur > 0) hint.classList.add('gone');
+
+        // Adapt UI to slide background
+        const isDark = slides[cur].dataset.bg === 'dark';
+        document.body.classList.toggle('light-slide', !isDark);
+
+        // Proto preloader
+        const pi = slides[cur].dataset.proto;
+        if (pi && !slides[cur].dataset.loaded) {
+            slides[cur].dataset.loaded = '1';
+            setTimeout(() => {
+                document.getElementById('pre' + pi).classList.add('off');
+                document.getElementById('p' + pi).classList.add('on');
+                lucide.createIcons();
+            }, 2500);
+        }
+    }
+
+    // Arrows
+    document.getElementById('al').onclick = () => go(cur - 1);
+    document.getElementById('ar').onclick = () => go(cur + 1);
+
+    // Touch
+    deck.addEventListener('touchstart', e => { 
+        if (e.target.closest('.proto')) return; // DON'T track swipes inside prototypes
+        sx = e.touches[0].clientX; drag = true; deck.style.transition = 'none'; 
+    }, { passive: true });
+    
+    deck.addEventListener('touchmove', e => { 
+        if (!drag) return; 
+        cx = e.touches[0].clientX; deck.style.transform = `translateX(${-(cur * innerWidth) + (cx - sx)}px)`; 
+    }, { passive: true });
+    
+    deck.addEventListener('touchend', () => { 
+        if (!drag) return; // Prevent ending a drag that didn't start
+        drag = false; deck.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'; 
+        const d = cx - sx; 
+        if (Math.abs(d) > 50) { d < 0 ? go(cur + 1) : go(cur - 1); } else { go(cur); } 
+        sx = 0; cx = 0; 
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(cur + 1); if (e.key === 'ArrowLeft') go(cur - 1); });
+
+    // Toast
+    function toast(msg) {
+        const t = document.getElementById('toast');
+        t.innerHTML = '<div class="ok"><i data-lucide="check" style="width:24px;"></i></div>' + msg;
+        t.classList.add('on');
+        lucide.createIcons();
+        setTimeout(() => t.classList.remove('on'), 2000);
+    }
+
+    // Language
+    document.querySelectorAll('.lang-pill button').forEach(b => {
+        b.onclick = () => {
+            const l = b.dataset.l;
+            document.documentElement.classList.remove('en', 'np');
+            if (l !== 'jp') document.documentElement.classList.add(l);
+            document.querySelectorAll('.lang-pill button').forEach(x => x.classList.remove('on'));
+            b.classList.add('on');
+        };
+    });
+
+    // Init
+    go(0);
+</script>
+</body>
+</html>

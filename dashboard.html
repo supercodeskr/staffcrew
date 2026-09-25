@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Crew - Manager Dashboard V2</title>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="lang-jp">
+    <!-- Back to Pitch Button -->
+    <a href="index.html" class="back-to-pitch">
+        <i data-feather="arrow-left"></i>
+        <span class="jp-text">プレゼンに戻る</span>
+        <span class="en-text">Back to Pitch</span>
+    </a>
+
+    <div class="dashboard-layout fade-in-up">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="logo-icon"><i data-feather="briefcase"></i></div>
+                <div class="logo-text">Staff Crew</div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active"><i data-feather="grid"></i> <span class="en-text">Overview</span><span class="jp-text">概要</span></a>
+                <a href="#" class="nav-item"><i data-feather="users"></i> <span class="en-text">Workforce</span><span class="jp-text">スタッフ管理</span></a>
+                <a href="#" class="nav-item"><i data-feather="map-pin"></i> <span class="en-text">Live Dispatch</span><span class="jp-text">稼働状況マップ</span></a>
+                <a href="#" class="nav-item"><i data-feather="file-text"></i> <span class="en-text">Timesheets</span><span class="jp-text">出勤簿・給与</span></a>
+                <a href="#" class="nav-item"><i data-feather="shield"></i> <span class="en-text">Compliance</span><span class="jp-text">コンプライアンス</span></a>
+            </nav>
+            <div class="nav-footer">
+                <a href="worker-app.html" class="nav-item" style="color: var(--primary-color);">
+                    <i data-feather="smartphone"></i> <span class="en-text">View App Prototype</span><span class="jp-text">アプリ版デモ</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-wrapper">
+            <header class="topbar">
+                <div class="search-box">
+                    <i data-feather="search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div class="user-controls">
+                    <button class="lang-btn" id="langToggleBtn"><i data-feather="globe"></i> 日本語</button>
+                    <button class="icon-btn"><i data-feather="bell"></i><span class="badge-dot"></span></button>
+                    <button class="icon-btn"><i data-feather="settings"></i></button>
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=F4F7F9&color=1E293B" alt="Admin" class="avatar-img">
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="page-header fade-in-up delay-1">
+                    <h1 class="page-title">
+                        <span class="en-text">Live Dispatch Overview</span>
+                        <span class="jp-text">リアルタイム稼働状況</span>
+                    </h1>
+                    <p class="page-subtitle">
+                        <span class="en-text">Real-time attendance, compliance, and emergency management.</span>
+                        <span class="jp-text">出退勤、コンプライアンス、緊急対応の総合管理</span>
+                    </p>
+                </div>
+
+                <!-- KPI Grid -->
+                <div class="kpi-grid fade-in-up delay-2">
+                    <div class="kpi-card">
+                        <div class="kpi-data">
+                            <h3><span class="en-text">Total Active</span><span class="jp-text">総稼働人数</span></h3>
+                            <div class="value">1,248</div>
+                        </div>
+                        <div class="kpi-icon blue"><i data-feather="users"></i></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-data">
+                            <h3><span class="en-text">On Site</span><span class="jp-text">出勤済（現場）</span></h3>
+                            <div class="value">1,105</div>
+                        </div>
+                        <div class="kpi-icon green"><i data-feather="check-circle"></i></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-data">
+                            <h3><span class="en-text">Late / Absent</span><span class="jp-text">遅刻・欠勤</span></h3>
+                            <div class="value">12</div>
+                        </div>
+                        <div class="kpi-icon red"><i data-feather="alert-triangle"></i></div>
+                    </div>
+                    <div class="kpi-card" style="cursor: pointer; border-color: var(--warning);" id="btnBroadcastSOS">
+                        <div class="kpi-data">
+                            <h3 style="color:var(--warning);"><span class="en-text">SOS Shifts Open</span><span class="jp-text">緊急ヘルプ募集</span></h3>
+                            <div class="value">3 <span style="font-size:0.8rem; font-weight:500; color:var(--text-secondary);"><span class="en-text">Click to Broadcast</span><span class="jp-text">クリックして配信</span></span></div>
+                        </div>
+                        <div class="kpi-icon orange"><i data-feather="radio"></i></div>
+                    </div>
+                </div>
+
+                <!-- 2 Column Layout for Table and Compliance Alerts -->
+                <div class="dashboard-columns fade-in-up delay-3">
+                    
+                    <!-- Data Table Panel -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title"><i data-feather="clock"></i> <span class="en-text">Recent Dispatches</span><span class="jp-text">最新の打刻状況</span></h2>
+                            <button class="btn-outline" onclick="window.location.href='timesheet-report.html'">
+                                <span class="en-text">View Kinmuhyou</span><span class="jp-text">勤務表を出力</span>
+                            </button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th><span class="en-text">Worker Name</span><span class="jp-text">スタッフ氏名</span></th>
+                                    <th><span class="en-text">Assigned Site</span><span class="jp-text">派遣先</span></th>
+                                    <th><span class="en-text">Verification</span><span class="jp-text">認証方法</span></th>
+                                    <th><span class="en-text">Status</span><span class="jp-text">ステータス</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="worker-cell">
+                                            <img src="https://ui-avatars.com/api/?name=Rajesh+T&background=EFF6FF&color=2563EB" alt="Rajesh">
+                                            <div class="worker-info">
+                                                <h4><span class="en-text">Rajesh Thapa</span><span class="jp-text">ラジェッシュ・タパ</span></h4>
+                                                <span>ID: SC-8472</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="en-text">Tokyo Auto Assembly</span><span class="jp-text">東京オートアセンブリ</span></td>
+                                    <td><i data-feather="shield" style="color:var(--success); width:16px;"></i> <span class="en-text">GPS + Selfie</span><span class="jp-text">GPS + 顔認証</span></td>
+                                    <td><span class="badge success"><span class="en-text">On Site</span><span class="jp-text">出勤済</span></span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="worker-cell">
+                                            <img src="https://ui-avatars.com/api/?name=Sunil+S&background=FEE2E2&color=EF4444" alt="Sunil">
+                                            <div class="worker-info">
+                                                <h4><span class="en-text">Sunil Shrestha</span><span class="jp-text">スニール・シュレスタ</span></h4>
+                                                <span>ID: SC-9021</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="en-text">Saitama Manufacturing</span><span class="jp-text">埼玉マニュファクチャリング</span></td>
+                                    <td><i data-feather="alert-circle" style="color:var(--danger); width:16px;"></i> <span class="en-text">Uploaded Medical Note</span><span class="jp-text">診断書アップロード済</span></td>
+                                    <td><span class="badge warning" style="background:var(--warning-bg); color:var(--warning);"><span class="en-text">Emergency Leave</span><span class="jp-text">緊急休暇</span></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Compliance Center Panel -->
+                    <div class="panel" style="border-color: #FCA5A5;">
+                        <div class="panel-header" style="background: #FEF2F2;">
+                            <h2 class="panel-title" style="color: #991B1B;"><i data-feather="alert-octagon"></i> <span class="en-text">Compliance Center</span><span class="jp-text">コンプライアンス警告</span></h2>
+                        </div>
+                        <div class="compliance-list">
+                            <div class="compliance-item">
+                                <div class="c-icon"><i data-feather="credit-card"></i></div>
+                                <div class="c-details">
+                                    <h4><span class="en-text">3 Workers: Visa Expiring</span><span class="jp-text">3名：在留期限接近</span></h4>
+                                    <p><span class="en-text">SSW Visas expire in < 30 Days</span><span class="jp-text">特定技能ビザの期限まで残り30日未満</span></p>
+                                </div>
+                            </div>
+                            <div class="compliance-item">
+                                <div class="c-icon" style="background:var(--warning-bg); color:var(--warning);"><i data-feather="clock"></i></div>
+                                <div class="c-details">
+                                    <h4><span class="en-text">15 Students: Nearing 28h Limit</span><span class="jp-text">15名：28時間ルール超過の恐れ</span></h4>
+                                    <p style="color:var(--warning);"><span class="en-text">Approaching legal weekly cap</span><span class="jp-text">留学生の週労働時間が上限に接近</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SOS Shift Broadcast Modal -->
+    <div class="desktop-modal" id="modalDesktopSOS">
+        <div class="d-modal-content">
+            <h2 style="margin-bottom:16px; font-size:1.25rem;">
+                <span class="en-text">Broadcast SOS Shift</span>
+                <span class="jp-text">緊急ヘルプシフトの一斉送信</span>
+            </h2>
+            <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:24px;">
+                <span class="en-text">Send a push notification to all available workers within a 10km radius of Saitama Manufacturing to cover an urgent vacancy.</span>
+                <span class="jp-text">欠員補充のため、埼玉工場から半径10km以内にいる非稼働スタッフ全員のスマホへプッシュ通知を送信します。</span>
+            </p>
+            <div style="background:var(--warning-bg); border:1px solid #FDE68A; padding:16px; border-radius:8px; margin-bottom:24px; font-size:0.85rem; font-weight:500; color:#92400E;">
+                <i data-feather="radio" style="width:16px; vertical-align:middle; margin-right:4px;"></i> 
+                <span class="en-text">42 Workers detected in radius.</span>
+                <span class="jp-text">周辺に 42名 の待機スタッフを検出しました。</span>
+            </div>
+            <button class="btn-outline btn-ripple" id="confirmDesktopSOS" style="width:100%; background:var(--primary-color); color:white; border:none; padding:12px; font-weight:600; margin-bottom:12px;">
+                <span class="en-text">Broadcast Now (20% Bonus Pay)</span>
+                <span class="jp-text">一斉送信する（20%特別手当あり）</span>
+            </button>
+            <button class="btn-outline btn-ripple close-modal" style="width:100%; border:none;">
+                <span class="en-text">Cancel</span>
+                <span class="jp-text">キャンセル</span>
+            </button>
+        </div>
+    </div>
+    
+    <script src="js/app.js"></script>
+    <script>feather.replace();</script>
+</body>
+</html>
